@@ -1,0 +1,117 @@
+-- Create the database
+CREATE DATABASE IF NOT EXISTS techajuda;
+USE techajuda;
+
+-- Users table
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    idade INT NOT NULL,
+    cpf VARCHAR(14) NOT NULL UNIQUE,
+    sexo ENUM('M', 'F', 'Outro') NOT NULL,
+    apelido VARCHAR(50),
+    email VARCHAR(100) NOT NULL UNIQUE,
+    celular VARCHAR(15) NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    endereco VARCHAR(200) NOT NULL,
+    cep VARCHAR(9) NOT NULL,
+    numero VARCHAR(10) NOT NULL,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_tecnico BOOLEAN DEFAULT FALSE,
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+-- MODIFIED: Technicians table - removida a restrição de chave primária no usuario_id
+CREATE TABLE IF NOT EXISTS tecnicos (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Adicionada coluna ID como chave primária
+    usuario_id INT NOT NULL,
+    cpf VARCHAR(14) NOT NULL UNIQUE,
+    anos_experiencia INT NOT NULL,
+    possui_local_proprio ENUM('sim', 'nao') NOT NULL,
+    logradouro VARCHAR(255),
+    numero VARCHAR(20),
+    cep VARCHAR(9),
+    informacao_localizacao TEXT,
+    descricao TEXT NOT NULL,
+    status ENUM('pendente', 'aprovado', 'rejeitado') DEFAULT 'pendente',
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+-- Services table
+CREATE TABLE IF NOT EXISTS servicos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    tecnico_id INT,
+    descricao TEXT NOT NULL,
+    status ENUM('pendente', 'aceito', 'recusado', 'concluido', 'cancelado') DEFAULT 'pendente',
+    data_solicitacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_conclusao TIMESTAMP NULL,
+    avaliacao INT,
+    comentario TEXT,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (tecnico_id) REFERENCES tecnicos(id)  -- Alterado para referenciar tecnicos(id)
+);
+
+-- Service categories
+CREATE TABLE IF NOT EXISTS categorias_servico (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL,
+    descricao TEXT
+);
+
+-- Technician specialties (many-to-many relationship)
+CREATE TABLE IF NOT EXISTS especialidades_tecnico (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tecnico_id INT NOT NULL,
+    categoria_id INT NOT NULL,
+    FOREIGN KEY (tecnico_id) REFERENCES tecnicos(id) ON DELETE CASCADE,  -- Alterado para tecnicos(id)
+    FOREIGN KEY (categoria_id) REFERENCES categorias_servico(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_especialidade (tecnico_id, categoria_id)
+);
+
+-- Messages table
+CREATE TABLE IF NOT EXISTS mensagens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    servico_id INT NOT NULL,
+    remetente_id INT NOT NULL,
+    mensagem TEXT NOT NULL,
+    data_envio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lida BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (servico_id) REFERENCES servicos(id) ON DELETE CASCADE,
+    FOREIGN KEY (remetente_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+-- Password recovery tokens
+CREATE TABLE IF NOT EXISTS tokens_recuperacao (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NOT NULL,
+    token VARCHAR(64) NOT NULL,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expirado BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+-- Insert sample service categories
+INSERT INTO categorias_servico (nome, descricao) VALUES
+('Manutenção de Computadores', 'Reparos em hardware e software de computadores'),
+('Redes e Internet', 'Configuração e solução de problemas de rede'),
+('Smartphones e Tablets', 'Reparos em dispositivos móveis'),
+('Sistemas Operacionais', 'Instalação e configuração de sistemas operacionais'),
+('Programação e Desenvolvimento', 'Ajuda com desenvolvimento de software'),
+('Segurança Digital', 'Proteção contra vírus e configuração de firewalls'),
+('Backup e Recuperação', 'Recuperação de dados e soluções de backup');
+
+-- Insert sample admin user (password: Admin@123)
+INSERT INTO usuarios (nome, idade, cpf, sexo, email, celular, senha, endereco, cep, numero, is_tecnico) VALUES
+('Administrador', 30, '123.456.789-00', 'M', 'admin@techajuda.com', '(11) 98765-4321', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Rua Admin', '12345-678', '100', TRUE);
+
+-- Make admin a technician (com as novas colunas)
+INSERT INTO tecnicos (usuario_id, cpf, anos_experiencia, possui_local_proprio, logradouro, numero, cep, informacao_localizacao, descricao, status) VALUES
+(1, '123.456.789-00', 5, 'sim', 'Rua Admin', '100', '12345-678', 'Prédio comercial, 3º andar', 'Administrador principal do sistema TechAjuda', 'aprovado');
+
+
+
+adicione depois 
+
+ALTER TABLE usuarios ADD COLUMN foto_perfil VARCHAR(255) DEFAULT NULL AFTER apelido;

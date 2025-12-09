@@ -1,0 +1,10 @@
+# Ignorar chave privada
+*.pem
+
+# Ignorar diretórios sensíveis
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+
+# Logs ou lixo
+*.log
