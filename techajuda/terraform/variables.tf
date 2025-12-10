@@ -8,11 +8,11 @@ variable "instance_type" {
 
 variable "db_username" {
   type = string
-  default = "systechpump"
+  default = "techajuda"
 }
 
 variable "db_password" { 
   type = string
-  default = "Systech123"
+  default = "Techajuda123"
   sensitive = true
 }

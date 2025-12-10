@@ -20,7 +20,7 @@ subnet_id = data.aws_subnet.subnet_1.id
   })
 
   tags = {
-    Name = "systechpump"
+    Name = "techajuda"
   }
 
 }

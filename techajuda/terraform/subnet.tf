@@ -27,7 +27,7 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
   ]
 
   tags = {
-    Name = "systechpump-rds-subnet-group"
+    Name = "techajuda-rds-subnet-group"
   }
 }
 
